@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora Mercado Livre</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
+    .container { width: 80%; max-width: 400px; padding: 20px; margin: 50px auto; background-color: #fff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
+    h3 { text-align: center; color: #333; }
+    input, select { width: 100%; padding: 10px; margin-bottom: 15px; font-size: 16px; border-radius: 4px; border: 1px solid #ddd; }
+    button { width: 100%; padding: 12px; background-color: #4CAF50; color: white; border: none; cursor: pointer; font-size: 16px; border-radius: 4px; }
+    button:hover { background-color: #45a049; }
+    .result { margin-top: 20px; font-weight: bold; text-align: center; font-size: 18px; }
+    .details { margin-top: 15px; font-size: 16px; }
+    .details div { margin-bottom: 5px; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h3>CALCULADORA MERCADO LIVRE</h3>
+    <input type="number" id="custo" placeholder="Custo do Produto" step="0.01">
+    <select id="embalagem">
+      <option value="0.03">P - R$ 0,03</option>
+      <option value="0.07">M - R$ 0,07</option>
+      <option value="0.12">G - R$ 0,12</option>
+      <option value="2.13">CX - R$ 2,13</option>
+      <option value="0.00">VAZIO - R$ 0,00</option>
+    </select>
+    <input type="number" id="taxa_mercado_livre" placeholder="Taxa Mercado Livre (%)" step="0.01">
+    <input type="number" id="frete" placeholder="Frete" step="0.01">
+    <input type="number" id="margem_lucro" placeholder="Margem de Lucro (%)" value="15" step="0.01">
+    <button id="calcular">Calcular Preço de Venda</button>
+    <div class="result" id="resultado"></div>
+    <div class="details" id="detalhes"></div>
+  </div>
+
+  <script>
+    document.getElementById('calcular').addEventListener('click', function() {
+      let custo = parseFloat(document.getElementById('custo').value);
+      let embalagem = parseFloat(document.getElementById('embalagem').value);
+      let taxaMercadoLivre = parseFloat(document.getElementById('taxa_mercado_livre').value) / 100;
+      let frete = parseFloat(document.getElementById('frete').value);
+      let margemLucro = parseFloat(document.getElementById('margem_lucro').value) / 100;
+
+      if (isNaN(custo) || isNaN(taxaMercadoLivre) || isNaN(frete) || isNaN(margemLucro)) {
+        document.getElementById('resultado').innerText = 'Por favor, insira valores válidos.';
+        return;
+      }
+
+      // Custos fixos
+      const etiqueta = 0.02;
+      const custosFixos = embalagem + etiqueta;
+
+      // Taxas variáveis
+      const comissao = 0.01;
+      const imposto = 0.085;
+
+      // Cálculo inicial do preço de venda sem a Taxa Custo Fixo
+      let precoVenda = (custo + custosFixos + frete) / (1 - (taxaMercadoLivre + comissao + imposto + margemLucro));
+
+      // Adicionar a Taxa Custo Fixo se o preço de venda for superior a R$ 79,00
+      if (precoVenda > 79) {
+        precoVenda = (custo + custosFixos + frete + 6.00) / (1 - (taxaMercadoLivre + comissao + imposto + margemLucro));
+      }
+
+      // Detalhes dos cálculos
+      let detalheCustoFixo = `
+        <div>Custo Fixo Total: R$ ${(custosFixos + (precoVenda > 79 ? 6.00 : 0)).toFixed(2)}</div>
+        <div>Embalagem: R$ ${embalagem.toFixed(2)}</div>
+        <div>Etiqueta: R$ ${etiqueta.toFixed(2)}</div>
+        <div>Frete: R$ ${frete.toFixed(2)}</div>
+        ${precoVenda > 79 ? '<div>Taxa Custo Fixo: R$ 6.00</div>' : ''}
+      `;
+      let detalheTaxaMercadoLivre = `Taxa Mercado Livre (${(taxaMercadoLivre * 100).toFixed(2)}%): R$ ${(taxaMercadoLivre * precoVenda).toFixed(2)}`;
+      let detalheComissao = `Comissão (1%): R$ ${(comissao * precoVenda).toFixed(2)}`;
+      let detalheImposto = `Imposto (8,5%): R$ ${(imposto * precoVenda).toFixed(2)}`;
+      let detalheMargemLucro = `Margem de Lucro (${(margemLucro * 100).toFixed(2)}%): R$ ${(margemLucro * precoVenda).toFixed(2)}`;
+
+      document.getElementById('resultado').innerText = `Preço de Venda: R$ ${precoVenda.toFixed(2)}`;
+      document.getElementById('detalhes').innerHTML = `
+        ${detalheCustoFixo}
+        <div>${detalheTaxaMercadoLivre}</div>
+        <div>${detalheComissao}</div>
+        <div>${detalheImposto}</div>
+        <div>${detalheMargemLucro}</div>
+      `;
+    });
+  </script>
+  
+</body>
+</html>
